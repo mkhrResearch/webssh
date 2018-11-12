@@ -328,7 +328,7 @@ jQuery(function($){
     });
 
     sock.onopen = function() {
-      $('.container').hide();
+      // $('.container').hide();
       term.open(terminal, true);
       term.toggleFullscreen(true);
       state = CONNECTED;
