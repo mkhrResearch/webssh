@@ -196,6 +196,8 @@ jQuery(function($){
       return;
     }
 
+    document.getElementById("test").action = "/ls/" + msg.id
+
     var ws_url = window.location.href.replace('http', 'ws'),
         join = (ws_url[ws_url.length-1] === '/' ? '' : '/'),
         url = ws_url + join + 'ws?id=' + msg.id,
@@ -603,10 +605,10 @@ jQuery(function($){
     connect();
   });
 
-  $(form_id2).submit(function(event){
-    console.log('Test!');
-    event.preventDefault();
-    console.log('Test!');
-    connect2();
-  });
+  //$(form_id2).submit(function(event){
+  //  console.log('Test!');
+  //  event.preventDefault();
+  //  console.log('Test!');
+  //  connect2();
+  //});
 });

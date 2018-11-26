@@ -8,6 +8,7 @@ from tornado.util import errno_from_exception
 
 BUF_SIZE = 32 * 1024
 workers = {}
+ssh_clients = {}
 
 
 def recycle_worker(worker):

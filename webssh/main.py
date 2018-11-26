@@ -20,7 +20,7 @@ def make_handlers(loop, options):
         (r'/', IndexHandler, dict(loop=loop, policy=policy,
                                   host_keys_settings=host_keys_settings)),
         (r'/ws', WsockHandler, dict(loop=loop)),
-        (r'/ls', FileListHandler, dict(loop=loop, policy=policy,
+        (r'/ls/(?P<worker_id>\w+)', FileListHandler, dict(loop=loop, policy=policy,
                                        host_keys_settings=host_keys_settings))
     ]
     return handlers

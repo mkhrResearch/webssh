@@ -15,7 +15,7 @@ from webssh.utils import (
     is_valid_ip_address, is_valid_port, is_valid_hostname, to_bytes, to_str,
     to_int, to_ip_address, UnicodeType, is_name_open_to_public, is_ip_hostname
 )
-from webssh.worker import Worker, Worker2, recycle_worker, workers
+from webssh.worker import Worker, Worker2, recycle_worker, workers, ssh_clients
 
 try:
     from concurrent.futures import Future
@@ -311,19 +311,12 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
             raise ValueError('Bad host key.')
 
         chan = ssh.invoke_shell(term='xterm')
-        chan2 = ssh2.invoke_shell(term='xterm')
-        chan2.setblocking(0)
         chan.setblocking(0)
-
-        worker2 = Worker2(self.loop, ssh2, chan2, dst_addr)
-        worker2.src_addr = self.get_client_addr()
-        worker2.encoding = self.get_default_encoding(ssh)
 
         worker = Worker(self.loop, ssh, chan, dst_addr)
         worker.src_addr = self.get_client_addr()
         worker.encoding = self.get_default_encoding(ssh)
-        return (worker, worker2)
-        #return worker
+        return worker
 
     def ssh_connect_wrapped(self, future):
         try:
@@ -352,17 +345,14 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
         t.start()
 
         try:
-            worker, worker2 = yield future
+            worker = yield future
             #worker = yield future
         except (ValueError, paramiko.SSHException) as exc:
             self.result.update(status=str(exc))
         else:
+            ssh_clients[worker.id] = self.ssh_client
             workers[worker.id] = worker
-            workers[worker2.id] = worker2
-            logging.debug('test1:[' + str(workers) +']')
-            logging.debug(workers)
             self.loop.call_later(DELAY, recycle_worker, worker)
-            self.loop.call_later(DELAY, recycle_worker, worker2)
             self.result.update(id=worker.id, encoding=worker.encoding)
 
         self.write(self.result)
@@ -370,6 +360,15 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
 
 class FileListHandler(IndexHandler, tornado.web.RequestHandler):
     #@tornado.gen.coroutine
+    def get(self, worker_id):
+        ssh_client = ssh_clients.get(worker_id)
+        stdin, stdout, stderr = ssh_client.exec_command("ls")
+        result = stdout.read()
+
+        logging.debug(type(result))
+        logging.debug(result)
+        self.write({"files" : result.decode('ascii')})
+
     async def post(self):
         if self.debug and self.get_argument('error', u''):
             # for testing purpose only
