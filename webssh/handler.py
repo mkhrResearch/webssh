@@ -368,9 +368,73 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
         self.write(self.result)
 
 
-class FileListHandler(MixinHandler, tornado.web.RequestHandler):
-    def post(self):
+class FileListHandler(IndexHandler, tornado.web.RequestHandler):
+    #@tornado.gen.coroutine
+    async def post(self):
+        if self.debug and self.get_argument('error', u''):
+            # for testing purpose only
+            raise ValueError('Uncaught exception')
+
+        future = Future()
+        t = threading.Thread(target=self.ssh_connect_wrapped, args=(future,))
+        t.setDaemon(True)
+        t.start()
+        logging.debug("test")
+        logging.debug(future)
+
+        try:
+            worker, worker2 = await future
+            #worker = yield future
+        except (ValueError, paramiko.SSHException) as exc:
+            self.result.update(status=str(exc))
+        else:
+            workers[worker.id] = worker
+            workers[worker2.id] = worker2
+            logging.debug('test1:[' + str(workers) +']')
+            logging.debug(workers)
+            self.loop.call_later(DELAY, recycle_worker, worker)
+            self.loop.call_later(DELAY, recycle_worker, worker2)
+            self.result.update(id=worker.id, encoding=worker.encoding)
+
         self.write({"msg" : "connected!"})
+        #self.write(self.result)
+
+    def ssh_connect(self):
+        ssh = self.ssh_client
+
+        try:
+            args = self.get_args()
+        except InvalidValueError as exc:
+            raise tornado.web.HTTPError(400, str(exc))
+
+        dst_addr = (args[0], args[1])
+        logging.info('Testing Connecting to {}:{}'.format(*dst_addr))
+
+        try:
+            ssh.connect(*args, timeout=6)
+        except socket.error:
+            raise ValueError('Unable to connect to {}:{}'.format(*dst_addr))
+        except paramiko.BadAuthenticationType:
+            raise ValueError('Bad authentication type.')
+        except paramiko.AuthenticationException:
+            raise ValueError('Authentication failed.')
+        except paramiko.BadHostKeyException:
+            raise ValueError('Bad host key.')
+
+        #chan = ssh.invoke_shell(term='xterm')
+        #sin, sout, serr = ssh.exec_command("/bin/ls")
+        chan = ssh.get_transport().open_session()
+        chan.exec_command("ls")
+
+        #chan.setblocking(0)
+
+        worker = Worker2(self.loop, ssh, chan, dst_addr)
+        worker.src_addr = self.get_client_addr()
+        worker.encoding = self.get_default_encoding(ssh)
+        return worker
+        #return worker
+
+
 
 class WsockHandler(MixinHandler, tornado.websocket.WebSocketHandler):
 
