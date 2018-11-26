@@ -4,7 +4,7 @@ import tornado.ioloop
 
 from tornado.options import options
 from webssh.handler import (
-    IndexHandler, WsockHandler, NotFoundHandler, config_open_to_public
+    IndexHandler, WsockHandler, NotFoundHandler, FileListHandler, config_open_to_public
 )
 from webssh.settings import (
     get_app_settings,  get_host_keys_settings, get_policy_setting,
@@ -19,7 +19,8 @@ def make_handlers(loop, options):
     handlers = [
         (r'/', IndexHandler, dict(loop=loop, policy=policy,
                                   host_keys_settings=host_keys_settings)),
-        (r'/ws', WsockHandler, dict(loop=loop))
+        (r'/ws', WsockHandler, dict(loop=loop)),
+        (r'/ls', FileListHandler, dict(loop=loop))
     ]
     return handlers
 

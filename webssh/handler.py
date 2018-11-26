@@ -15,7 +15,7 @@ from webssh.utils import (
     is_valid_ip_address, is_valid_port, is_valid_hostname, to_bytes, to_str,
     to_int, to_ip_address, UnicodeType, is_name_open_to_public, is_ip_hostname
 )
-from webssh.worker import Worker, recycle_worker, workers
+from webssh.worker import Worker, Worker2, recycle_worker, workers
 
 try:
     from concurrent.futures import Future
@@ -185,6 +185,8 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
             # multipart form
             self.privatekey_filename = lst[0]['filename']
             data = lst[0]['body']
+            logging.debug(self.privatekey_filename)
+            logging.debug(data)
             value = self.decode_argument(data, name=name).strip()
         else:
             # urlencoded form
@@ -297,6 +299,8 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
 
         try:
             ssh.connect(*args, timeout=6)
+            ssh2 = self.get_ssh_client()
+            ssh2.connect(*args, timeout=6)
         except socket.error:
             raise ValueError('Unable to connect to {}:{}'.format(*dst_addr))
         except paramiko.BadAuthenticationType:
@@ -307,11 +311,19 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
             raise ValueError('Bad host key.')
 
         chan = ssh.invoke_shell(term='xterm')
+        chan2 = ssh2.invoke_shell(term='xterm')
+        chan2.setblocking(0)
         chan.setblocking(0)
+
+        worker2 = Worker2(self.loop, ssh2, chan2, dst_addr)
+        worker2.src_addr = self.get_client_addr()
+        worker2.encoding = self.get_default_encoding(ssh)
+
         worker = Worker(self.loop, ssh, chan, dst_addr)
         worker.src_addr = self.get_client_addr()
         worker.encoding = self.get_default_encoding(ssh)
-        return worker
+        return (worker, worker2)
+        #return worker
 
     def ssh_connect_wrapped(self, future):
         try:
@@ -340,16 +352,25 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
         t.start()
 
         try:
-            worker = yield future
+            worker, worker2 = yield future
+            #worker = yield future
         except (ValueError, paramiko.SSHException) as exc:
             self.result.update(status=str(exc))
         else:
             workers[worker.id] = worker
+            workers[worker2.id] = worker2
+            logging.debug('test1:[' + str(workers) +']')
+            logging.debug(workers)
             self.loop.call_later(DELAY, recycle_worker, worker)
+            self.loop.call_later(DELAY, recycle_worker, worker2)
             self.result.update(id=worker.id, encoding=worker.encoding)
 
         self.write(self.result)
 
+
+class FileListHandler(MixinHandler, tornado.web.RequestHandler):
+    def post(self):
+        self.write({"msg" : "connected!"})
 
 class WsockHandler(MixinHandler, tornado.websocket.WebSocketHandler):
 

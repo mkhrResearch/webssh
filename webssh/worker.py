@@ -11,7 +11,9 @@ workers = {}
 
 
 def recycle_worker(worker):
+    logging.debug('debug:[' + str(workers) + ']')
     if worker.handler:
+        logging.debug('test')
         return
     logging.warning('Recycling worker {}'.format(worker.id))
     workers.pop(worker.id, None)
@@ -31,6 +33,7 @@ class Worker(object):
         self.mode = IOLoop.READ
 
     def __call__(self, fd, events):
+        logging.debug((IOLoop.READ, IOLoop.WRITE, events))
         if events & IOLoop.READ:
             self.on_read()
         if events & IOLoop.WRITE:
@@ -104,3 +107,7 @@ class Worker(object):
         self.chan.close()
         self.ssh.close()
         logging.info('Connection to {}:{} lost'.format(*self.dst_addr))
+
+class Worker2(Worker):
+    def __init__(self, loop, ssh, chan, dst_addr):
+        super().__init__(loop, ssh, chan, dst_addr)

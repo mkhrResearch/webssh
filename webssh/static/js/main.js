@@ -42,6 +42,7 @@ jQuery(function($){
       title_text = 'WebSSH',
       title_element = document.querySelector('title'),
       form_id = '#connect',
+      form_id2 = '#test',
       debug = document.querySelector(form_id).noValidate,
       DISCONNECTED = 0,
       CONNECTING = 1,
@@ -201,7 +202,7 @@ jQuery(function($){
         sock = new window.WebSocket(url),
         encoding = 'utf-8',
         decoder = window.TextDecoder ? new window.TextDecoder(encoding) : encoding,
-        terminal = document.getElementById('#terminal'),
+        terminal = document.getElementById('terminal'),
         term = new window.Terminal({
           cursorBlink: true,
         });
@@ -323,14 +324,14 @@ jQuery(function($){
     };
 
     term.on('data', function(data) {
-      // console.log(data);
+      console.log(data);
       sock.send(JSON.stringify({'data': data}));
     });
 
     sock.onopen = function() {
       // $('.container').hide();
       term.open(terminal, true);
-      term.toggleFullscreen(true);
+      term.toggleFullscreen(false);
       state = CONNECTED;
       title_element.text = title_text;
     };
@@ -562,11 +563,50 @@ jQuery(function($){
     }
   }
 
+  function connect2() {
+    // use data from the arguments
+    var form = document.querySelector(form_id2),
+        // url = data.url || form.action,
+        url = form.action,
+        _xsrf = form.querySelector('input[name="_xsrf"]');
+
+    //var result = validate_form_data(wrap_object(data));
+    //if (!result.valid) {
+    //  console.log(result.msg);
+    //  return;
+    //}
+
+    var data = {
+        test: "test"
+    }
+    data._xsrf = _xsrf.value;
+
+    $.ajax({
+        url: url,
+        type: 'post',
+        data: data,
+        complete: ajax_complete_callback2
+    });
+
+    return;
+
+  }
+
   wssh.connect = connect;
 
+  function ajax_complete_callback2(resp) {
+	  var result = resp.responseJSON;
+	  console.log(result.msg);
+  }
   $(form_id).submit(function(event){
     event.preventDefault();
     connect();
   });
 
+  $(form_id2).submit(function(event){
+    console.log('Test!');
+    event.preventDefault();
+    console.log('Test!');
+    connect2();
+  });
 });
