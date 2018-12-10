@@ -223,7 +223,8 @@ jQuery(function ($) {
       if (term) {
         if (text.indexOf('[[ace]]') != -1) {
           text = text.replace('\[\[ace\]\]', 'ace');
-          connect_without_options_getfile("Hoge.java")
+          textList = text.split();
+          connect_without_options_getfile(textList[textList.length - 1]);
         }
         term.write(text);
 
