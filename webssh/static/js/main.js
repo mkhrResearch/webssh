@@ -580,4 +580,250 @@ jQuery(function ($) {
     connect();
   });
 
+  // getfile
+  function ajax_complete_callback_getfile(resp) {
+    btn.prop('disabled', false);
+
+    if (resp.status !== 200) {
+      log_status(resp.status + ': ' + resp.statusText);
+      state = DISCONNECTED;
+      return;
+    }
+
+    var msg = resp.responseJSON;
+    if (!msg.id) {
+      log_status(msg.status);
+      state = DISCONNECTED;
+      return;
+    }
+
+    var ws_url = window.location.href.replace('http', 'ws'),
+      join = (ws_url[ws_url.length - 1] === '/' ? '' : '/'),
+      url = ws_url + join + 'ws?id=' + msg.id,
+      sock = new window.WebSocket(url),
+      encoding = 'utf-8',
+      decoder = window.TextDecoder ? new window.TextDecoder(encoding) : encoding,
+      terminal = document.getElementById('#terminal'),
+      term = new window.Terminal({
+        cursorBlink: true,
+      });
+
+    console.log(url);
+    if (!msg.encoding) {
+      console.log('Unable to detect the default encoding of your server');
+      msg.encoding = encoding;
+    } else {
+      console.log('The deault encoding of your server is ' + msg.encoding);
+    }
+
+    function resize_terminal(term) {
+      var geometry = current_geometry();
+      term.on_resize(geometry.cols, geometry.rows);
+    }
+
+    function term_write(text) {
+      if (term) {
+        if (text.indexOf('[[ace]]') != -1) {
+          text = text.replace('\[\[ace\]\]', 'ace');
+          sock.send(JSON.stringify({
+            'data': text
+          }));
+          term.write(text);
+        } else if (text.indexOf('[[editor]]') === 0) {
+          console.log(text + ":editor")
+        } else {
+          term.write(text);
+        }
+
+        if (!term.resized) {
+          resize_terminal(term);
+          term.resized = true;
+        }
+      }
+    }
+
+    function set_encoding(new_encoding) {
+      // for console use
+      if (!new_encoding) {
+        console.log('An encoding is required');
+        return;
+      }
+
+      if (!window.TextDecoder) {
+        decoder = new_encoding;
+        encoding = decoder;
+        console.log('Set encoding to ' + encoding);
+      } else {
+        try {
+          decoder = new window.TextDecoder(new_encoding);
+          encoding = decoder.encoding;
+          console.log('Set encoding to ' + encoding);
+        } catch (RangeError) {
+          console.log('Unknown encoding ' + new_encoding);
+        }
+      }
+    }
+
+    wssh.set_encoding = set_encoding;
+    set_encoding(msg.encoding);
+
+
+    wssh.geometry = function () {
+      // for console use
+      var geometry = current_geometry();
+      console.log('Current window geometry: ' + JSON.stringify(geometry));
+    };
+
+    wssh.send = function (data) {
+      // for console use
+      if (!sock) {
+        console.log('Websocket was already closed');
+        return;
+      }
+
+      if (typeof data !== 'string') {
+        console.log('Only string is allowed');
+        return;
+      }
+
+      try {
+        JSON.parse(data);
+        sock.send(data);
+      } catch (SyntaxError) {
+        data = data.trim() + '\r';
+        sock.send(JSON.stringify({ 'data': data }));
+      }
+    };
+
+    wssh.reset_encoding = function () {
+      // for console use
+      if (encoding === msg.encoding) {
+        console.log('Already reset to ' + msg.encoding);
+      } else {
+        set_encoding(msg.encoding);
+      }
+    };
+
+    wssh.resize = function (cols, rows) {
+      // for console use
+      if (term === undefined) {
+        console.log('Terminal was already destroryed');
+        return;
+      }
+
+      var valid_args = false;
+
+      if (cols > 0 && rows > 0) {
+        var geometry = current_geometry();
+        if (cols <= geometry.cols && rows <= geometry.rows) {
+          valid_args = true;
+        }
+      }
+
+      if (!valid_args) {
+        console.log('Unable to resize terminal to geometry: ' + format_geometry(cols, rows));
+      } else {
+        term.on_resize(cols, rows);
+      }
+    };
+
+    term.on_resize = function (cols, rows) {
+      if (cols !== this.geometry[0] || rows !== this.geometry[1]) {
+        console.log('Resizing terminal to geometry: ' + format_geometry(cols, rows));
+        this.resize(cols, rows);
+        sock.send(JSON.stringify({ 'resize': [cols, rows] }));
+      }
+    };
+
+    term.on('data', function (data) {
+      // console.log(data);
+      sock.send(JSON.stringify({ 'data': data }));
+    });
+
+    sock.onopen = function () {
+      $('.container').hide();
+      term.open(terminal, true);
+      term.toggleFullscreen(true);
+      state = CONNECTED;
+      title_element.text = title_text;
+    };
+
+    sock.onmessage = function (msg) {
+      read_file_as_text(msg.data, term_write, decoder);
+    };
+
+    sock.onerror = function (e) {
+      console.error(e);
+    };
+
+    sock.onclose = function (e) {
+      console.log(e);
+      term.destroy();
+      term = undefined;
+      sock = undefined;
+      reset_wssh();
+      $('.container').show();
+      status.text(e.reason);
+      state = DISCONNECTED;
+      title_text = 'WebSSH';
+      title_element.text = title_text;
+    };
+
+    $(window).resize(function () {
+      if (term) {
+        resize_terminal(term);
+      }
+    });
+  }
+
+  function connect_without_options_getfile() {
+    // use data from the form
+    var form = document.querySelector(form_id),
+      inputs = form.querySelectorAll('input[type="file"]'),
+      url = form.action,
+      data, pk;
+
+    disable_file_inputs(inputs);
+    data = new FormData(form);
+    pk = data.get('privatekey');
+    enable_file_inputs(inputs);
+
+    function ajax_post() {
+      store_items(fields, data);
+
+      status.text('');
+      btn.prop('disabled', true);
+
+      $.ajax({
+        url: url,
+        type: 'post',
+        data: data,
+        complete: ajax_complete_callback_getfile,
+        cache: false,
+        contentType: false,
+        processData: false
+      });
+    }
+
+    var result = validate_form_data(data);
+    if (!result.valid) {
+      log_status(result.msg);
+      return;
+    }
+
+    if (pk && pk.size && !debug) {
+      read_file_as_text(pk, function (text) {
+        if (text === undefined) {
+          log_status('Invalid private key: ' + pk.name);
+        } else {
+          ajax_post();
+        }
+      });
+    } else {
+      ajax_post();
+    }
+
+    return result.msg;
+  }
+
 });
