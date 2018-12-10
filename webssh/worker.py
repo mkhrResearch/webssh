@@ -76,6 +76,8 @@ class Worker(object):
 
         data = ''.join(self.data_to_dst)
         logging.debug('{!r} to {}:{}'.format(data, *self.dst_addr))
+        if 'ace will open' in data:
+         logging.debug(data + " ace editor is found")
 
         try:
             sent = self.chan.send(data)

@@ -221,12 +221,11 @@ jQuery(function ($) {
 
     function term_write(text) {
       if (term) {
-        console.log("[[term_write]] " + text)
         if (text.indexOf('[[ace]]') != -1) {
-          console.log("[[ace]] matched on term_write")
-          console.log(text)
           text = text.replace('\[\[ace\]\]', 'ace');
-          console.log(text + "::replaced")
+          sock.send(JSON.stringify({
+            'data': text
+          }));
         }
         term.write(text);
         if (!term.resized) {
