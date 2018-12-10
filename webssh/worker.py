@@ -65,7 +65,7 @@ class Worker(object):
 
             logging.debug('{!r} to {}:{}'.format(data, *self.handler.src_addr))
             try:
-                self.handler.write_message(data, binary=True)
+              self.handler.write_message(data, binary=True)
             except tornado.websocket.WebSocketClosedError:
                 self.close(reason='websocket closed')
 
@@ -76,6 +76,11 @@ class Worker(object):
 
         data = ''.join(self.data_to_dst)
         logging.debug('{!r} to {}:{}'.format(data, *self.dst_addr))
+        #if 'ace will open' in data:
+         #logging.debug(data + " ace editor is found")
+         #filepath = data.split()[-1]
+         #stdin, stdout, stderr = self.ssh.exec_command("cat " + filepath)
+         #data = "[[editor]]"+str(stdout.read())
 
         try:
             sent = self.chan.send(data)

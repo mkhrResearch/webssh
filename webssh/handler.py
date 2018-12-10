@@ -8,6 +8,7 @@ import traceback
 import weakref
 import paramiko
 import tornado.web
+import codecs
 
 from tornado.ioloop import IOLoop
 from tornado.options import options
@@ -350,6 +351,217 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
 
         self.write(self.result)
 
+class GetfileHandler(MixinHandler, tornado.web.RequestHandler):
+
+    def initialize(self, loop, policy, host_keys_settings):
+        super(GetfileHandler, self).initialize(loop)
+        self.policy = policy
+        self.host_keys_settings = host_keys_settings
+        self.ssh_client = self.get_ssh_client()
+        self.privatekey_filename = None
+        self.debug = self.settings.get('debug', False)
+        self.result = dict(id=None, status=None, encoding=None)
+
+    def write_error(self, status_code, **kwargs):
+        if self.request.method != 'POST' or not swallow_http_errors:
+            super(IndexHandler, self).write_error(status_code, **kwargs)
+        else:
+            exc_info = kwargs.get('exc_info')
+            if exc_info:
+                reason = getattr(exc_info[1], 'log_message', None)
+                if reason:
+                    self._reason = reason
+            self.result.update(status=self._reason)
+            self.set_status(200)
+            self.finish(self.result)
+
+    def get_ssh_client(self):
+        ssh = paramiko.SSHClient()
+        ssh._system_host_keys = self.host_keys_settings['system_host_keys']
+        ssh._host_keys = self.host_keys_settings['host_keys']
+        ssh._host_keys_filename = self.host_keys_settings['host_keys_filename']
+        ssh.set_missing_host_key_policy(self.policy)
+        return ssh
+
+    def get_privatekey(self):
+        name = 'privatekey'
+        lst = self.request.files.get(name)
+        if lst:
+            # multipart form
+            self.privatekey_filename = lst[0]['filename']
+            data = lst[0]['body']
+            value = self.decode_argument(data, name=name).strip()
+        else:
+            # urlencoded form
+            value = self.get_argument(name, u'')
+
+        if len(value) > KEY_MAX_SIZE:
+            raise InvalidValueError(
+                'Invalid private key: {}'.format(self.privatekey_filename)
+            )
+        return value
+
+    @classmethod
+    def get_specific_pkey(cls, pkeycls, privatekey, password):
+        logging.info('Trying {}'.format(pkeycls.__name__))
+        try:
+            pkey = pkeycls.from_private_key(io.StringIO(privatekey),
+                                            password=password)
+        except paramiko.PasswordRequiredException:
+            raise
+        except paramiko.SSHException:
+            pass
+        else:
+            return pkey
+
+    @classmethod
+    def get_pkey_obj(cls, privatekey, password, filename):
+        bpass = to_bytes(password) if password else None
+
+        pkey = cls.get_specific_pkey(paramiko.RSAKey, privatekey, bpass)\
+            or cls.get_specific_pkey(paramiko.DSSKey, privatekey, bpass)\
+            or cls.get_specific_pkey(paramiko.ECDSAKey, privatekey, bpass)\
+            or cls.get_specific_pkey(paramiko.Ed25519Key, privatekey, bpass)
+
+        if not pkey:
+            if not password:
+                error = 'Invalid private key: {}'.format(filename)
+            else:
+                error = (
+                    'Wrong password {!r} for decrypting the private key.'
+                ) .format(password)
+            raise InvalidValueError(error)
+
+        return pkey
+
+    def get_hostname(self):
+        value = self.get_value('hostname')
+        if not (is_valid_hostname(value) | is_valid_ip_address(value)):
+            raise InvalidValueError('Invalid hostname: {}'.format(value))
+        return value
+
+    def get_port(self):
+        value = self.get_argument('port', u'')
+        if not value:
+            return DEFAULT_PORT
+
+        port = to_int(value)
+        if port is None or not is_valid_port(port):
+            raise InvalidValueError('Invalid port: {}'.format(value))
+        return port
+
+    def lookup_hostname(self, hostname, port):
+        key = hostname if port == 22 else '[{}]:{}'.format(hostname, port)
+
+        if self.ssh_client._system_host_keys.lookup(key) is None:
+            if self.ssh_client._host_keys.lookup(key) is None:
+                raise ValueError(
+                    'Connection to {}:{} is not allowed.'.format(
+                        hostname, port)
+                )
+
+    def get_args(self):
+        hostname = self.get_hostname()
+        port = self.get_port()
+        if isinstance(self.policy, paramiko.RejectPolicy):
+            self.lookup_hostname(hostname, port)
+        username = self.get_value('username')
+        password = self.get_argument('password', u'')
+        filepath = self.get_value('filepath')
+        logging.debug(filepath + " in get_args in getfile handler---------------------")
+        privatekey = self.get_privatekey()
+        if privatekey:
+            pkey = self.get_pkey_obj(
+                privatekey, password, self.privatekey_filename
+            )
+            password = None
+        else:
+            pkey = None
+        args = (hostname, port, username, password, pkey,filepath)
+        logging.debug(args)
+        return args
+
+    def get_default_encoding(self, ssh):
+        try:
+            _, stdout, _ = ssh.exec_command('locale charmap')
+        except paramiko.SSHException:
+            result = None
+        else:
+            result = to_str(stdout.read().strip())
+
+        return result if result else 'utf-8'
+
+    def ssh_connect(self):
+        ssh = self.ssh_client
+
+        try:
+            args = self.get_args()
+        except InvalidValueError as exc:
+            raise tornado.web.HTTPError(400, str(exc))
+
+        dst_addr = (args[0], args[1])
+        logging.info('Connecting to {}:{}'.format(*dst_addr))
+
+        try:
+            ssh.connect(*args, timeout=6)
+        except socket.error:
+            raise ValueError('Unable to connect to {}:{}'.format(*dst_addr))
+        except paramiko.BadAuthenticationType:
+            raise ValueError('Bad authentication type.')
+        except paramiko.AuthenticationException:
+            raise ValueError('Authentication failed.')
+        except paramiko.BadHostKeyException:
+            raise ValueError('Bad host key.')
+
+        #chan = ssh.invoke_shell(term='xterm')
+        stdin, stdout, stderr = ssh.exec_command('cat ' + args[5])
+        return stdout
+        #chan.setblocking(0)
+        #worker = Worker(self.loop, ssh, chan, dst_addr)
+        #worker.src_addr = self.get_client_addr()
+        #worker.encoding = self.get_default_encoding(ssh)
+        #return worker
+
+    def ssh_connect_wrapped(self, future):
+        try:
+            worker = self.ssh_connect()
+        except Exception as exc:
+            logging.error(traceback.format_exc())
+            future.set_exception(exc)
+        else:
+            future.set_result(worker)
+
+    def head(self):
+        pass
+
+    def get(self):
+        self.render('index.html', debug=self.debug)
+
+    @tornado.gen.coroutine
+    def post(self):
+        if self.debug and self.get_argument('error', u''):
+            # for testing purpose only
+            raise ValueError('Uncaught exception')
+
+        stdout = self.ssh_connect()
+        result = stdout.read()
+        logging.debug(str(result) + " :stdout")
+
+        #future = Future()
+        #t = threading.Thread(target=self.ssh_connect_wrapped, args=(future,))
+        #t.setDaemon(True)
+        #t.start()
+
+        #try:
+            #worker = yield future
+        #except (ValueError, paramiko.SSHException) as exc:
+            #self.result.update(status=str(exc))
+        #else:
+            #workers[worker.id] = worker
+            #self.loop.call_later(DELAY, recycle_worker, worker)
+            #self.result.update(id=worker.id, encoding=worker.encoding)
+
+        self.write({"editor" : result.decode('utf-8')})
 
 class WsockHandler(MixinHandler, tornado.websocket.WebSocketHandler):
 

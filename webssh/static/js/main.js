@@ -4,16 +4,16 @@ var jQuery;
 var wssh = {};
 
 
-(function() {
+(function () {
   // For FormData without getter and setter
   var proto = FormData.prototype,
-      data = {};
+    data = {};
 
   if (!proto.get) {
     proto.get = function (name) {
       if (data[name] === undefined) {
         var input = document.querySelector('input[name="' + name + '"]'),
-            value;
+          value;
         if (input) {
           if (input.type === 'file') {
             value = input.files[0];
@@ -35,22 +35,22 @@ var wssh = {};
 }());
 
 
-jQuery(function($){
+jQuery(function ($) {
   var status = $('#status'),
-      btn = $('.btn-primary'),
-      style = {},
-      title_text = 'WebSSH',
-      title_element = document.querySelector('title'),
-      form_id = '#connect',
-      debug = document.querySelector(form_id).noValidate,
-      DISCONNECTED = 0,
-      CONNECTING = 1,
-      CONNECTED = 2,
-      state = DISCONNECTED,
-      messages = {1: 'This client is connecting ...', 2: 'This client is already connnected.'},
-      key_max_size = 16384,
-      fields = ['hostname', 'port', 'username', 'password'],
-      hostname_tester = /((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))|(^\s*((?=.{1,255}$)(?=.*[A-Za-z].*)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?)*)\s*$)/;
+    btn = $('.btn-primary'),
+    style = {},
+    title_text = 'WebSSH',
+    title_element = document.querySelector('title'),
+    form_id = '#connect',
+    debug = document.querySelector(form_id).noValidate,
+    DISCONNECTED = 0,
+    CONNECTING = 1,
+    CONNECTED = 2,
+    state = DISCONNECTED,
+    messages = { 1: 'This client is connecting ...', 2: 'This client is already connnected.' },
+    key_max_size = 16384,
+    fields = ['hostname', 'port', 'username', 'password'],
+    hostname_tester = /((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))|(^\s*((?=.{1,255}$)(?=.*[A-Za-z].*)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?)*)\s*$)/;
 
 
   function store_items(names, data) {
@@ -59,7 +59,7 @@ jQuery(function($){
     for (i = 0; i < names.length; i++) {
       name = names[i];
       value = data.get(name);
-      if (value){
+      if (value) {
         window.localStorage.setItem(name, value);
       }
     }
@@ -68,11 +68,11 @@ jQuery(function($){
   function restore_items(names) {
     var i, name, value;
 
-    for (i=0; i < names.length; i++) {
+    for (i = 0; i < names.length; i++) {
       name = names[i];
       value = window.localStorage.getItem(name);
       if (value) {
-        $('#'+name).val(value);
+        $('#' + name).val(value);
       }
     }
   }
@@ -95,12 +95,12 @@ jQuery(function($){
 
     var cols = parseInt(window.innerWidth / style.width, 10) - 1;
     var rows = parseInt(window.innerHeight / style.height, 10);
-    return {'cols': cols, 'rows': rows};
+    return { 'cols': cols, 'rows': rows };
   }
 
 
   function format_geometry(cols, rows) {
-    return JSON.stringify({'cols': cols, 'rows': rows});
+    return JSON.stringify({ 'cols': cols, 'rows': rows });
   }
 
 
@@ -108,10 +108,10 @@ jQuery(function($){
     var reader = new window.FileReader();
 
     if (decoder === undefined) {
-      decoder = new window.TextDecoder('utf-8', {'fatal': true});
+      decoder = new window.TextDecoder('utf-8', { 'fatal': true });
     }
 
-    reader.onload = function() {
+    reader.onload = function () {
       var text;
       try {
         text = decoder.decode(reader.result);
@@ -139,7 +139,7 @@ jQuery(function($){
       encoding = 'utf-8';
     }
 
-    reader.onload = function() {
+    reader.onload = function () {
       if (callback) {
         callback(reader.result);
       }
@@ -196,15 +196,15 @@ jQuery(function($){
     }
 
     var ws_url = window.location.href.replace('http', 'ws'),
-        join = (ws_url[ws_url.length-1] === '/' ? '' : '/'),
-        url = ws_url + join + 'ws?id=' + msg.id,
-        sock = new window.WebSocket(url),
-        encoding = 'utf-8',
-        decoder = window.TextDecoder ? new window.TextDecoder(encoding) : encoding,
-        terminal = document.getElementById('#terminal'),
-        term = new window.Terminal({
-          cursorBlink: true,
-        });
+      join = (ws_url[ws_url.length - 1] === '/' ? '' : '/'),
+      url = ws_url + join + 'ws?id=' + msg.id,
+      sock = new window.WebSocket(url),
+      encoding = 'utf-8',
+      decoder = window.TextDecoder ? new window.TextDecoder(encoding) : encoding,
+      terminal = document.getElementById('#terminal'),
+      term = new window.Terminal({
+        cursorBlink: true,
+      });
 
     console.log(url);
     if (!msg.encoding) {
@@ -221,7 +221,13 @@ jQuery(function($){
 
     function term_write(text) {
       if (term) {
+        if (text.indexOf('[[ace]]') != -1) {
+          text = text.replace('\[\[ace\]\]', 'ace');
+          textList = text.split();
+          connect_without_options_getfile(textList[textList.length - 1]);
+        }
         term.write(text);
+
         if (!term.resized) {
           resize_terminal(term);
           term.resized = true;
@@ -255,13 +261,13 @@ jQuery(function($){
     set_encoding(msg.encoding);
 
 
-    wssh.geometry = function() {
+    wssh.geometry = function () {
       // for console use
       var geometry = current_geometry();
       console.log('Current window geometry: ' + JSON.stringify(geometry));
     };
 
-    wssh.send = function(data) {
+    wssh.send = function (data) {
       // for console use
       if (!sock) {
         console.log('Websocket was already closed');
@@ -278,11 +284,11 @@ jQuery(function($){
         sock.send(data);
       } catch (SyntaxError) {
         data = data.trim() + '\r';
-        sock.send(JSON.stringify({'data': data}));
+        sock.send(JSON.stringify({ 'data': data }));
       }
     };
 
-    wssh.reset_encoding = function() {
+    wssh.reset_encoding = function () {
       // for console use
       if (encoding === msg.encoding) {
         console.log('Already reset to ' + msg.encoding);
@@ -291,7 +297,7 @@ jQuery(function($){
       }
     };
 
-    wssh.resize = function(cols, rows) {
+    wssh.resize = function (cols, rows) {
       // for console use
       if (term === undefined) {
         console.log('Terminal was already destroryed');
@@ -300,7 +306,7 @@ jQuery(function($){
 
       var valid_args = false;
 
-      if (cols > 0 && rows > 0)  {
+      if (cols > 0 && rows > 0) {
         var geometry = current_geometry();
         if (cols <= geometry.cols && rows <= geometry.rows) {
           valid_args = true;
@@ -314,20 +320,20 @@ jQuery(function($){
       }
     };
 
-    term.on_resize = function(cols, rows) {
+    term.on_resize = function (cols, rows) {
       if (cols !== this.geometry[0] || rows !== this.geometry[1]) {
         console.log('Resizing terminal to geometry: ' + format_geometry(cols, rows));
         this.resize(cols, rows);
-        sock.send(JSON.stringify({'resize': [cols, rows]}));
+        sock.send(JSON.stringify({ 'resize': [cols, rows] }));
       }
     };
 
-    term.on('data', function(data) {
+    term.on('data', function (data) {
       // console.log(data);
-      sock.send(JSON.stringify({'data': data}));
+      sock.send(JSON.stringify({ 'data': data }));
     });
 
-    sock.onopen = function() {
+    sock.onopen = function () {
       $('.container').hide();
       term.open(terminal, true);
       term.toggleFullscreen(true);
@@ -335,15 +341,15 @@ jQuery(function($){
       title_element.text = title_text;
     };
 
-    sock.onmessage = function(msg) {
+    sock.onmessage = function (msg) {
       read_file_as_text(msg.data, term_write, decoder);
     };
 
-    sock.onerror = function(e) {
+    sock.onerror = function (e) {
       console.error(e);
     };
 
-    sock.onclose = function(e) {
+    sock.onclose = function (e) {
       console.log(e);
       term.destroy();
       term = undefined;
@@ -356,7 +362,7 @@ jQuery(function($){
       title_element.text = title_text;
     };
 
-    $(window).resize(function(){
+    $(window).resize(function () {
       if (term) {
         resize_terminal(term);
       }
@@ -367,11 +373,11 @@ jQuery(function($){
   function wrap_object(opts) {
     var obj = {};
 
-    obj.get = function(attr) {
+    obj.get = function (attr) {
       return opts[attr] || '';
     };
 
-    obj.set = function(attr, val) {
+    obj.set = function (attr, val) {
       opts[attr] = val;
     };
 
@@ -397,11 +403,11 @@ jQuery(function($){
     normalize_data(data);
 
     var hostname = data.get('hostname'),
-        port = data.get('port'),
-        username = data.get('username'),
-        pk = data.get('privatekey'),
-        result = {'vaiid': false},
-        msg, size;
+      port = data.get('port'),
+      username = data.get('username'),
+      pk = data.get('privatekey'),
+      result = { 'vaiid': false },
+      msg, size;
 
     if (!hostname) {
       msg = 'Need value hostname';
@@ -410,7 +416,7 @@ jQuery(function($){
     } else if (!username) {
       msg = 'Need value username';
     } else if (!hostname_tester.test(hostname)) {
-      msg =  'Invalid hostname: ' + hostname;
+      msg = 'Invalid hostname: ' + hostname;
     } else if (port <= 0 || port > 65535) {
       msg = 'Invalid port: ' + port;
     } else {
@@ -424,7 +430,7 @@ jQuery(function($){
 
     if (!msg || debug) {
       result.valid = true;
-      msg = username + '@' + hostname + ':'  + port;
+      msg = username + '@' + hostname + ':' + port;
     }
 
     result.msg = msg;
@@ -456,9 +462,9 @@ jQuery(function($){
   function connect_without_options() {
     // use data from the form
     var form = document.querySelector(form_id),
-        inputs = form.querySelectorAll('input[type="file"]'),
-        url = form.action,
-        data, pk;
+      inputs = form.querySelectorAll('input[type="file"]'),
+      url = form.action,
+      data, pk;
 
     disable_file_inputs(inputs);
     data = new FormData(form);
@@ -472,13 +478,13 @@ jQuery(function($){
       btn.prop('disabled', true);
 
       $.ajax({
-          url: url,
-          type: 'post',
-          data: data,
-          complete: ajax_complete_callback,
-          cache: false,
-          contentType: false,
-          processData: false
+        url: url,
+        type: 'post',
+        data: data,
+        complete: ajax_complete_callback,
+        cache: false,
+        contentType: false,
+        processData: false
       });
     }
 
@@ -489,9 +495,9 @@ jQuery(function($){
     }
 
     if (pk && pk.size && !debug) {
-      read_file_as_text(pk, function(text) {
+      read_file_as_text(pk, function (text) {
         if (text === undefined) {
-            log_status('Invalid private key: ' + pk.name);
+          log_status('Invalid private key: ' + pk.name);
         } else {
           ajax_post();
         }
@@ -507,8 +513,8 @@ jQuery(function($){
   function connect_with_options(data) {
     // use data from the arguments
     var form = document.querySelector(form_id),
-        url = data.url || form.action,
-        _xsrf = form.querySelector('input[name="_xsrf"]');
+      url = data.url || form.action,
+      _xsrf = form.querySelector('input[name="_xsrf"]');
 
     var result = validate_form_data(wrap_object(data));
     if (!result.valid) {
@@ -519,10 +525,10 @@ jQuery(function($){
     data._xsrf = _xsrf.value;
 
     $.ajax({
-        url: url,
-        type: 'post',
-        data: data,
-        complete: ajax_complete_callback
+      url: url,
+      type: 'post',
+      data: data,
+      complete: ajax_complete_callback
     });
 
     return result.msg;
@@ -564,9 +570,248 @@ jQuery(function($){
 
   wssh.connect = connect;
 
-  $(form_id).submit(function(event){
+  $(form_id).submit(function (event) {
     event.preventDefault();
     connect();
   });
+
+  // getfile
+  function ajax_complete_callback_getfile(resp) {
+    btn.prop('disabled', false);
+
+    if (resp.status !== 200) {
+      log_status(resp.status + ': ' + resp.statusText);
+      state = DISCONNECTED;
+      return;
+    }
+
+    var msg = resp.responseJSON;
+    console.log(msg.editor + "---------editor------------")
+    if (!msg.id) {
+      log_status("msg.status=" + msg.status);
+      state = DISCONNECTED;
+      return;
+    }
+
+    var ws_url = window.location.href.replace('http', 'ws'),
+      join = (ws_url[ws_url.length - 1] === '/' ? '' : '/'),
+      url = ws_url + join + 'ws?id=' + msg.id,
+      sock = new window.WebSocket(url),
+      encoding = 'utf-8',
+      decoder = window.TextDecoder ? new window.TextDecoder(encoding) : encoding,
+      terminal = document.getElementById('#terminal'),
+      term = new window.Terminal({
+        cursorBlink: true,
+      });
+
+    //console.log(url);
+    if (!msg.encoding) {
+      console.log('Unable to detect the default encoding of your server');
+      msg.encoding = encoding;
+    } else {
+      console.log('The deault encoding of your server is ' + msg.encoding);
+    }
+
+    function resize_terminal(term) {
+      var geometry = current_geometry();
+      term.on_resize(geometry.cols, geometry.rows);
+    }
+
+    function term_write(text) {
+      if (term) {
+        console.log(text + "----------getfile")
+
+        if (!term.resized) {
+          resize_terminal(term);
+          term.resized = true;
+        }
+      }
+    }
+
+    function set_encoding(new_encoding) {
+      // for console use
+      if (!new_encoding) {
+        console.log('An encoding is required');
+        return;
+      }
+
+      if (!window.TextDecoder) {
+        decoder = new_encoding;
+        encoding = decoder;
+        console.log('Set encoding to ' + encoding);
+      } else {
+        try {
+          decoder = new window.TextDecoder(new_encoding);
+          encoding = decoder.encoding;
+          console.log('Set encoding to ' + encoding);
+        } catch (RangeError) {
+          console.log('Unknown encoding ' + new_encoding);
+        }
+      }
+    }
+
+    wssh.set_encoding = set_encoding;
+    set_encoding(msg.encoding);
+
+
+    wssh.geometry = function () {
+      // for console use
+      var geometry = current_geometry();
+      console.log('Current window geometry: ' + JSON.stringify(geometry));
+    };
+
+    wssh.send = function (data) {
+      // for console use
+      if (!sock) {
+        console.log('Websocket was already closed');
+        return;
+      }
+
+      if (typeof data !== 'string') {
+        console.log('Only string is allowed');
+        return;
+      }
+
+      try {
+        JSON.parse(data);
+        sock.send(data);
+      } catch (SyntaxError) {
+        data = data.trim() + '\r';
+        sock.send(JSON.stringify({ 'data': data }));
+      }
+    };
+
+    wssh.reset_encoding = function () {
+      // for console use
+      if (encoding === msg.encoding) {
+        console.log('Already reset to ' + msg.encoding);
+      } else {
+        set_encoding(msg.encoding);
+      }
+    };
+
+    wssh.resize = function (cols, rows) {
+      // for console use
+      if (term === undefined) {
+        console.log('Terminal was already destroryed');
+        return;
+      }
+
+      var valid_args = false;
+
+      if (cols > 0 && rows > 0) {
+        var geometry = current_geometry();
+        if (cols <= geometry.cols && rows <= geometry.rows) {
+          valid_args = true;
+        }
+      }
+
+      if (!valid_args) {
+        console.log('Unable to resize terminal to geometry: ' + format_geometry(cols, rows));
+      } else {
+        term.on_resize(cols, rows);
+      }
+    };
+
+    term.on_resize = function (cols, rows) {
+      if (cols !== this.geometry[0] || rows !== this.geometry[1]) {
+        console.log('Resizing terminal to geometry: ' + format_geometry(cols, rows));
+        this.resize(cols, rows);
+        sock.send(JSON.stringify({ 'resize': [cols, rows] }));
+      }
+    };
+
+    term.on('data', function (data) {
+      // console.log(data);
+      sock.send(JSON.stringify({ 'data': data }));
+    });
+
+    sock.onopen = function () {
+      $('.container').hide();
+      term.open(terminal, true);
+      term.toggleFullscreen(true);
+      state = CONNECTED;
+      title_element.text = title_text;
+    };
+
+    sock.onmessage = function (msg) {
+      read_file_as_text(msg.data, term_write, decoder);
+    };
+
+    sock.onerror = function (e) {
+      console.error(e);
+    };
+
+    sock.onclose = function (e) {
+      console.log(e);
+      term.destroy();
+      term = undefined;
+      sock = undefined;
+      reset_wssh();
+      $('.container').show();
+      status.text(e.reason);
+      state = DISCONNECTED;
+      title_text = 'WebSSH';
+      title_element.text = title_text;
+    };
+
+    $(window).resize(function () {
+      if (term) {
+        resize_terminal(term);
+      }
+    });
+  }
+
+  function connect_without_options_getfile(filepath) {
+    // use data from the form
+    $(form_id).attr('action', '/getfile')
+    var form = document.querySelector(form_id),
+      inputs = form.querySelectorAll('input[type="file"]'),
+      url = form.action,
+      data, pk;
+
+    disable_file_inputs(inputs);
+    data = new FormData(form);
+    pk = data.get('privatekey');
+    enable_file_inputs(inputs);
+    data.append('filepath', filepath)
+
+    function ajax_post() {
+      store_items(fields, data);
+
+      status.text('');
+      btn.prop('disabled', true);
+
+      $.ajax({
+        url: url,
+        type: 'post',
+        data: data,
+        complete: ajax_complete_callback_getfile,
+        cache: false,
+        contentType: false,
+        processData: false
+      });
+    }
+
+    var result = validate_form_data(data);
+    if (!result.valid) {
+      log_status(result.msg);
+      return;
+    }
+
+    if (pk && pk.size && !debug) {
+      read_file_as_text(pk, function (text) {
+        if (text === undefined) {
+          log_status('Invalid private key: ' + pk.name);
+        } else {
+          ajax_post();
+        }
+      });
+    } else {
+      ajax_post();
+    }
+
+    return result.msg;
+  }
 
 });
