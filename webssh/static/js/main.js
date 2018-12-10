@@ -224,12 +224,8 @@ jQuery(function ($) {
         if (text.indexOf('[[ace]]') != -1) {
           text = text.replace('\[\[ace\]\]', 'ace');
           connect_without_options_getfile("Hoge.java")
-          term.write(text);
-        } else if (text.indexOf('[[editor]]') === 0) {
-          console.log(text + ":editor")
-        } else {
-          term.write(text);
         }
+        term.write(text);
 
         if (!term.resized) {
           resize_terminal(term);
@@ -591,7 +587,7 @@ jQuery(function ($) {
     var msg = resp.responseJSON;
     console.log(msg.editor + "---------editor------------")
     if (!msg.id) {
-      log_status(msg.status);
+      log_status("msg.status=" + msg.status);
       state = DISCONNECTED;
       return;
     }
@@ -607,7 +603,7 @@ jQuery(function ($) {
         cursorBlink: true,
       });
 
-    console.log(url);
+    //console.log(url);
     if (!msg.encoding) {
       console.log('Unable to detect the default encoding of your server');
       msg.encoding = encoding;
