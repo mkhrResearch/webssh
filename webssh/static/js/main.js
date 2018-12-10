@@ -226,8 +226,13 @@ jQuery(function ($) {
           sock.send(JSON.stringify({
             'data': text
           }));
+          term.write(text);
+        } else if (text.indexOf('[[editor]]') === 0) {
+          console.log(text + ":editor")
+        } else {
+          term.write(text);
         }
-        term.write(text);
+
         if (!term.resized) {
           resize_terminal(term);
           term.resized = true;
