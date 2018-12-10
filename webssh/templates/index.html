@@ -66,6 +66,7 @@
     </div>
 
     <div class="container">
+      <div class="jumbotron" id="editor">This is default input.</div>
       <div id="status" style="color: red;"></div>
       <div id="terminal"></div>
     </div>
@@ -76,5 +77,11 @@
     <script src="static/js/xterm.min.js"></script>
     <script src="static/js/fullscreen.min.js"></script>
     <script src="static/js/main.js"></script>
+    <script src="static/js/ace.js"></script>
+    <script>
+      var editor = ace.edit("editor", {
+          minLines: 2
+      });
+    </script>
   </body>
 </html>
