@@ -65,6 +65,9 @@ class Worker(object):
 
             logging.debug('{!r} to {}:{}'.format(data, *self.handler.src_addr))
             try:
+              if '[[editor]]'.encode() in data:
+                pass
+              else:
                 self.handler.write_message(data, binary=True)
             except tornado.websocket.WebSocketClosedError:
                 self.close(reason='websocket closed')
