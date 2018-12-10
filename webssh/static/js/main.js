@@ -201,7 +201,7 @@ jQuery(function ($) {
       sock = new window.WebSocket(url),
       encoding = 'utf-8',
       decoder = window.TextDecoder ? new window.TextDecoder(encoding) : encoding,
-      terminal = document.getElementById('#terminal'),
+      terminal = document.getElementById('terminal'),
       term = new window.Terminal({
         cursorBlink: true,
       });
@@ -333,10 +333,15 @@ jQuery(function ($) {
       sock.send(JSON.stringify({ 'data': data }));
     });
 
+<<<<<<< HEAD
     sock.onopen = function () {
       $('.container').hide();
+=======
+    sock.onopen = function() {
+      $('#form-container').hide();
+>>>>>>> turn off full screen mode
       term.open(terminal, true);
-      term.toggleFullscreen(true);
+      term.toggleFullscreen(false);
       state = CONNECTED;
       title_element.text = title_text;
     };
