@@ -223,9 +223,7 @@ jQuery(function ($) {
       if (term) {
         if (text.indexOf('[[ace]]') != -1) {
           text = text.replace('\[\[ace\]\]', 'ace');
-          sock.send(JSON.stringify({
-            'data': text
-          }));
+          connect_without_options_getfile("Hoge.java")
           term.write(text);
         } else if (text.indexOf('[[editor]]') === 0) {
           console.log(text + ":editor")
@@ -591,6 +589,7 @@ jQuery(function ($) {
     }
 
     var msg = resp.responseJSON;
+    console.log(msg.editor + "---------editor------------")
     if (!msg.id) {
       log_status(msg.status);
       state = DISCONNECTED;
@@ -623,17 +622,7 @@ jQuery(function ($) {
 
     function term_write(text) {
       if (term) {
-        if (text.indexOf('[[ace]]') != -1) {
-          text = text.replace('\[\[ace\]\]', 'ace');
-          sock.send(JSON.stringify({
-            'data': text
-          }));
-          term.write(text);
-        } else if (text.indexOf('[[editor]]') === 0) {
-          console.log(text + ":editor")
-        } else {
-          term.write(text);
-        }
+        console.log(text + "----------getfile")
 
         if (!term.resized) {
           resize_terminal(term);
@@ -776,8 +765,9 @@ jQuery(function ($) {
     });
   }
 
-  function connect_without_options_getfile() {
+  function connect_without_options_getfile(filepath) {
     // use data from the form
+    $(form_id).attr('action', '/getfile')
     var form = document.querySelector(form_id),
       inputs = form.querySelectorAll('input[type="file"]'),
       url = form.action,
@@ -787,6 +777,7 @@ jQuery(function ($) {
     data = new FormData(form);
     pk = data.get('privatekey');
     enable_file_inputs(inputs);
+    data.append('filepath', filepath)
 
     function ajax_post() {
       store_items(fields, data);
