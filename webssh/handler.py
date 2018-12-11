@@ -16,7 +16,7 @@ from webssh.utils import (
     is_valid_ip_address, is_valid_port, is_valid_hostname, to_bytes, to_str,
     to_int, to_ip_address, UnicodeType, is_name_open_to_public, is_ip_hostname
 )
-from webssh.worker import Worker, recycle_worker, workers
+from webssh.worker import Worker, recycle_worker, workers, connected_workers
 
 try:
     from concurrent.futures import Future
@@ -327,7 +327,7 @@ class IndexHandler(MixinHandler, tornado.web.RequestHandler):
         pass
 
     def get(self):
-        self.render('index.html', debug=self.debug)
+        self.render('index.html', debug=self.debug, token=self.xsrf_token)
 
     @tornado.gen.coroutine
     def post(self):
@@ -580,6 +580,7 @@ class WsockHandler(MixinHandler, tornado.websocket.WebSocketHandler):
             worker = workers.get(worker_id)
             if worker and worker.src_addr[0] == self.src_addr[0]:
                 workers.pop(worker.id)
+                connected_workers[worker.id] = worker
                 self.set_nodelay(True)
                 worker.set_handler(self)
                 self.worker_ref = weakref.ref(worker)

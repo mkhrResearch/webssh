@@ -6,6 +6,7 @@ from tornado.options import options
 from webssh.handler import (
     IndexHandler, GetfileHandler, WsockHandler, NotFoundHandler, config_open_to_public
 )
+from webssh.handlers.editor_save_handler import EditorSaveHandler
 from webssh.settings import (
     get_app_settings,  get_host_keys_settings, get_policy_setting,
     get_ssl_context, get_server_settings
@@ -21,7 +22,8 @@ def make_handlers(loop, options):
                                   host_keys_settings=host_keys_settings)),
         (r'/getfile', GetfileHandler, dict(loop=loop, policy=policy,
                                   host_keys_settings=host_keys_settings)),
-        (r'/ws', WsockHandler, dict(loop=loop))
+        (r'/ws', WsockHandler, dict(loop=loop)),
+        (r'/save', EditorSaveHandler, dict(loop=loop))
     ]
     return handlers
 

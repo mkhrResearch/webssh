@@ -2,9 +2,19 @@
 
 var jQuery;
 var wssh = {};
+var current_session_id;
 var editor = ace.edit("editor", {
   minLines: 2
 });
+
+function onSaveButtonClick(e) {
+  axios.post('/save', {
+    id : current_session_id,
+    content : editor.getValue()}
+    ).then(function(response){
+        console.log(response)
+    });
+}
 
 
 (function () {
@@ -208,6 +218,7 @@ jQuery(function ($) {
       term = new window.Terminal({
         cursorBlink: true,
       });
+    current_session_id = msg.id;
 
     console.log(url);
     if (!msg.encoding) {
@@ -336,13 +347,8 @@ jQuery(function ($) {
       sock.send(JSON.stringify({ 'data': data }));
     });
 
-<<<<<<< HEAD
-    sock.onopen = function () {
-      $('.container').hide();
-=======
     sock.onopen = function() {
       $('#form-container').hide();
->>>>>>> turn off full screen mode
       term.open(terminal, true);
       term.toggleFullscreen(false);
       state = CONNECTED;
@@ -821,5 +827,7 @@ jQuery(function ($) {
 
     return result.msg;
   }
+
+  $('#save-button').click(onSaveButtonClick);
 
 });

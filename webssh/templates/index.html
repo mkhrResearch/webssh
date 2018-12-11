@@ -66,6 +66,7 @@
     </div>
 
     <div class="container">
+      <button id="save-button" type="button" class="btn">Save</button>
       <div class="jumbotron" id="editor">This is default input.</div>
       <div id="status" style="color: red;"></div>
       <div id="terminal"></div>
@@ -76,9 +77,11 @@
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/xterm.min.js"></script>
     <script src="static/js/fullscreen.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="static/js/ace.js"></script>
     <script src="static/js/main.js"></script>
     <script>
+      axios.defaults.headers['X-XSRFToken'] = '{{ token }}';
     </script>
   </body>
 </html>
