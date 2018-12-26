@@ -2,6 +2,19 @@
 
 var jQuery;
 var wssh = {};
+var current_session_id;
+var editor = ace.edit("editor", {
+  minLines: 2
+});
+
+function onSaveButtonClick(e) {
+  axios.post('/save', {
+    id : current_session_id,
+    content : editor.getValue()}
+    ).then(function(response){
+        console.log(response)
+    });
+}
 
 
 (function () {
@@ -201,10 +214,11 @@ jQuery(function ($) {
       sock = new window.WebSocket(url),
       encoding = 'utf-8',
       decoder = window.TextDecoder ? new window.TextDecoder(encoding) : encoding,
-      terminal = document.getElementById('#terminal'),
+      terminal = document.getElementById('terminal'),
       term = new window.Terminal({
         cursorBlink: true,
       });
+    current_session_id = msg.id;
 
     console.log(url);
     if (!msg.encoding) {
@@ -333,10 +347,10 @@ jQuery(function ($) {
       sock.send(JSON.stringify({ 'data': data }));
     });
 
-    sock.onopen = function () {
-      $('.container').hide();
+    sock.onopen = function() {
+      $('#form-container').hide();
       term.open(terminal, true);
-      term.toggleFullscreen(true);
+      term.toggleFullscreen(false);
       state = CONNECTED;
       title_element.text = title_text;
     };
@@ -813,5 +827,7 @@ jQuery(function ($) {
 
     return result.msg;
   }
+
+  $('#save-button').click(onSaveButtonClick);
 
 });

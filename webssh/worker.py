@@ -8,7 +8,7 @@ from tornado.util import errno_from_exception
 
 BUF_SIZE = 32 * 1024
 workers = {}
-
+connected_workers = {}
 
 def recycle_worker(worker):
     if worker.handler:
