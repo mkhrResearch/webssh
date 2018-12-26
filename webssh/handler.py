@@ -515,7 +515,8 @@ class GetfileHandler(MixinHandler, tornado.web.RequestHandler):
 
         #chan = ssh.invoke_shell(term='xterm')
         stdin, stdout, stderr = ssh.exec_command('cat ' + args[5])
-        return stdout
+        filepath = args[5].split()[-1]
+        return stdout, filepath
         #chan.setblocking(0)
         #worker = Worker(self.loop, ssh, chan, dst_addr)
         #worker.src_addr = self.get_client_addr()
@@ -543,7 +544,7 @@ class GetfileHandler(MixinHandler, tornado.web.RequestHandler):
             # for testing purpose only
             raise ValueError('Uncaught exception')
 
-        stdout = self.ssh_connect()
+        stdout,filepath = self.ssh_connect()
         result = stdout.read()
         logging.debug(str(result) + " :stdout")
 
@@ -561,7 +562,7 @@ class GetfileHandler(MixinHandler, tornado.web.RequestHandler):
             #self.loop.call_later(DELAY, recycle_worker, worker)
             #self.result.update(id=worker.id, encoding=worker.encoding)
 
-        self.write({"editor" : result.decode('utf-8'),"status":"ace"})
+        self.write({"editor" : result.decode('utf-8'),"status":"ace","filepath":filepath})
 
 class WsockHandler(MixinHandler, tornado.websocket.WebSocketHandler):
 

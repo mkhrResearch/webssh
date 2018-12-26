@@ -601,6 +601,7 @@ jQuery(function ($) {
     }
 
     var msg = resp.responseJSON;
+    console.log(msg.filepath)
     console.log(msg.editor + "---------editor------------")
     editor.setValue(msg.editor, -1)
     if (!msg.id) {
