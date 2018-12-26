@@ -8,10 +8,12 @@ var editor = ace.edit("editor", {
 });
 
 function onSaveButtonClick(e) {
+  let path = $('#filepath-badge').text();
   axios.post('/save', {
-    id: current_session_id,
-    content: editor.getValue()
-  }
+      id: current_session_id,
+      filepath: path,
+      content: editor.getValue()
+    }
   ).then(function (response) {
     console.log(response)
   });
