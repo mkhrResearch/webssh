@@ -808,6 +808,7 @@ jQuery(function ($) {
         contentType: false,
         processData: false
       });
+      $(form_id).attr('action', '') //reset action
     }
 
     var result = validate_form_data(data);
