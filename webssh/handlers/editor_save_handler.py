@@ -9,7 +9,11 @@ class EditorSaveHandler(MixinHandler, RequestHandler):
         json_data = json_decode(self.request.body)
 
         worker = connected_workers[json_data['id']]
-        sin, _, _ = worker.ssh.exec_command("tee source.txt")
+
+        path = json_data['filepath']
+        cmd = "tee {}".format(path)
+
+        sin, _, _ = worker.ssh.exec_command(cmd)
         sin.write(json_data['content'])
 
         self.write({
