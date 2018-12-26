@@ -561,7 +561,7 @@ class GetfileHandler(MixinHandler, tornado.web.RequestHandler):
             #self.loop.call_later(DELAY, recycle_worker, worker)
             #self.result.update(id=worker.id, encoding=worker.encoding)
 
-        self.write({"editor" : result.decode('utf-8')})
+        self.write({"editor" : result.decode('utf-8'),"status":"ace"})
 
 class WsockHandler(MixinHandler, tornado.websocket.WebSocketHandler):
 

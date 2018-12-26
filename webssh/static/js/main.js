@@ -9,11 +9,12 @@ var editor = ace.edit("editor", {
 
 function onSaveButtonClick(e) {
   axios.post('/save', {
-    id : current_session_id,
-    content : editor.getValue()}
-    ).then(function(response){
-        console.log(response)
-    });
+    id: current_session_id,
+    content: editor.getValue()
+  }
+  ).then(function (response) {
+    console.log(response)
+  });
 }
 
 
@@ -347,7 +348,7 @@ jQuery(function ($) {
       sock.send(JSON.stringify({ 'data': data }));
     });
 
-    sock.onopen = function() {
+    sock.onopen = function () {
       $('#form-container').hide();
       term.open(terminal, true);
       term.toggleFullscreen(false);
