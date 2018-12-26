@@ -2,6 +2,9 @@
 
 var jQuery;
 var wssh = {};
+var editor = ace.edit("editor", {
+  minLines: 2
+});
 
 
 (function () {
