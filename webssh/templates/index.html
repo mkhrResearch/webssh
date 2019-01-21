@@ -68,17 +68,10 @@
     <script src="static/js/xterm.min.js"></script>
     <script src="static/js/fullscreen.min.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="static/js/ace.js"></script>
-    <script src="static/js/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js"></script>
+    <script src="static/js/main.js"></script>
     <script>
       axios.defaults.headers['X-XSRFToken'] = '{{ token }}';
-      var editor = ace.edit("editor");
-      editor.setTheme("ace/theme/eclipse");
-      editor.setFontSize(14);
-      editor.getSession().setMode("ace/mode/java");
-      editor.getSession().setUseWrapMode(true);
-      editor.getSession().setTabSize(2);
     </script>
   </body>
 </html>

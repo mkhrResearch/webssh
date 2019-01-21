@@ -3,7 +3,13 @@
 var jQuery;
 var wssh = {};
 var current_session_id;
-//var editor = ace.edit("editor");
+
+var editor = ace.edit("editor");
+editor.setTheme("ace/theme/eclipse");
+editor.setFontSize(14);
+editor.getSession().setMode("ace/mode/java");
+editor.getSession().setUseWrapMode(true);
+editor.getSession().setTabSize(2);
 
 function onSaveButtonClick(e) {
   let path = $('#filepath-badge').text();
