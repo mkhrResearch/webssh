@@ -7,24 +7,9 @@
     <link href="static/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="static/css/xterm.min.css" rel="stylesheet" type="text/css"/>
     <link href="static/css/fullscreen.min.css" rel="stylesheet" type="text/css"/>
-    <style>
-      .row {
-        margin-top: 20px;
-        margin-bottom: 10px;
-      }
-
-      .container {
-        margin-top: 20px;
-      }
-
-      .btn {
-        margin-top: 10px;
-      }
-
-      .btn-danger {
-        margin-left: 5px;
-      }
-    </style>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="static/css/style.css" />
   </head>
   <body>
     <div class="container" id="form-container">
@@ -65,12 +50,16 @@
 
     </div>
 
-    <div class="container">
-      <button id="save-button" type="button" class="btn">Save</button>
+    <div id="e_container">
+      <button id="save-button" type="button" class="btn">
+      <span class="glyphicon glyphicon-floppy-save"></span>
+      Save</button>
       <span id="filepath-badge" class="badge badge-secondary">source.txt</span>
-      <div class="jumbotron" id="editor">This is default input.</div>
+      <div class="jumbotron" id="editor" style="height:90%;">This is default input.</div>
       <div id="status" style="color: red;"></div>
+    <div id="t_container">  
       <div id="terminal"></div>
+    </div>
     </div>
 
     <script src="static/js/jquery.min.js"></script>
@@ -79,7 +68,7 @@
     <script src="static/js/xterm.min.js"></script>
     <script src="static/js/fullscreen.min.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="static/js/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js"></script>
     <script src="static/js/main.js"></script>
     <script>
       axios.defaults.headers['X-XSRFToken'] = '{{ token }}';
