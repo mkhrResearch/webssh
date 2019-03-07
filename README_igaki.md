@@ -28,9 +28,9 @@ $ git clone https://github.com/mkhrResearch/webssh.git
 $ cd webssh
 $ python setup.py install
 ```
-- 開発中は python setup.py developにしておくと，setupを都度実行しなくて良くなる（wsshは再起動必要)
+- 開発中は python setup.py developにしておくと，setupを都度実行しなくて良くなる（wssh起動時の--debug=trueがあるとサーバ再起動不要になる)
 - websshの起動
-`$ wssh --fbidhttp=False --address='0.0.0.0' --port=2000 --logging=debug`
+`$ wssh --debug=true --fbidhttp=False --address='0.0.0.0' --port=2000 --logging=debug`
 
 ## Trouble Shooting
 - setup.py実行時に`build/temp.linux-x86_64-3.6/_openssl.c:498:10: fatal error: openssl/opensslv.h: No such file or directory`と言われた場合
