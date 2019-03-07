@@ -11,10 +11,12 @@ class EditorSaveHandler(MixinHandler, RequestHandler):
         worker = connected_workers[json_data['id']]
 
         path = json_data['filepath']
-        cmd = "tee {}".format(path)
+        # "tee {}" だとプロセスが終了しない
+        cmd = "cat > {}".format(path)
 
         sin, _, _ = worker.ssh.exec_command(cmd)
         sin.write(json_data['content'])
+        sin.close()
 
         self.write({
             "msg": "save OK.",
