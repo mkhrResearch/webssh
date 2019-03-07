@@ -33,7 +33,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     install_requires=[
-        'tornado>=4.5.0',
+        'tornado<=5.1.1',
         'paramiko>=2.3.1',
     ],
 )
