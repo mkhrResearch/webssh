@@ -23,6 +23,34 @@ function onSaveButtonClick(e) {
   });
 }
 
+function onFilePathBadgeDoubleClick(e) {
+  var input = $('<input />', {
+    'type': 'text',
+    'value': $(this).text(),
+    'id': 'filepath-badge-input',
+    'class': 'editing'
+  });
+
+  var old = $(this).replaceWith(input);
+
+  $(document).off("blur.filepath-badge-input change.filepath-badge-input", 'input#filepath-badge-input');
+  $(document).on("blur.filepath-badge-input change.filepath-badge-input", 'input#filepath-badge-input', function () {
+    setTimeout(function () {
+      if(!input.hasClass('editing')){
+        return;
+      }
+      var value = input.val();
+
+      old.text(value);
+      old.dblclick(onFilePathBadgeDoubleClick);
+      console.log(old.text());
+      console.log(old == null);
+      input.replaceWith(old);
+      input.toggleClass('editing')
+    }, 100)
+  });
+}
+
 
 (function () {
   // For FormData without getter and setter
@@ -839,5 +867,7 @@ jQuery(function ($) {
   }
 
   $('#save-button').click(onSaveButtonClick);
+  //$('#filepath-badge').dblclick(onFilePathBadgeDoubleClick);
+  $('div#e_container').on('dblclick', 'span#filepath-badge', onFilePathBadgeDoubleClick)
 
 });
